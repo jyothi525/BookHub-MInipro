@@ -1,17 +1,16 @@
 import {Component} from 'react'
-import Cookies from 'js-cookie'
+import {Link} from 'react-router-dom'
 import Slider from 'react-slick'
-
-import 'slick-carousel/slick/slick.css'
-import 'slick-carousel/slick/slick-theme.css'
+import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
-
 import Header from '../Header'
 import Footer from '../Footer'
-
+import BookHubThemeContext from '../../context/BookHubThemeContext'
 import './index.css'
+import 'slick-carousel/slick/slick.css'
+import 'slick-carousel/slick/slick-theme.css'
 
-const topRatedApiStatuses = {
+const apiStatusConstants = {
   initial: 'INITIAL',
   success: 'SUCCESS',
   failure: 'FAILURE',
@@ -21,19 +20,26 @@ const topRatedApiStatuses = {
 const settings = {
   dots: false,
   infinite: false,
-  autoplay: true,
-  slidesToScroll: 1,
+  speed: 500,
   slidesToShow: 4,
+  slidesToScroll: 1,
   responsive: [
     {
       breakpoint: 1024,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+      },
+    },
+    {
+      breakpoint: 600,
       settings: {
         slidesToShow: 3,
         slidesToScroll: 1,
       },
     },
     {
-      breakpoint: 786,
+      breakpoint: 480,
       settings: {
         slidesToShow: 2,
         slidesToScroll: 1,
@@ -43,16 +49,22 @@ const settings = {
 }
 
 class Home extends Component {
-  state = {topRatedApiStatus: topRatedApiStatuses.initial, topRatedBooks: []}
+  state = {booksList: [], apiStatus: apiStatusConstants.initial}
 
   componentDidMount() {
-    this.getTopRatedBooks()
+    this.getBooks()
   }
 
-  getTopRatedBooks = async () => {
-    this.setState({topRatedApiStatus: topRatedApiStatuses.inProgress})
+  formattedData = book => ({
+    id: book.id,
+    coverPic: book.cover_pic,
+    title: book.title,
+    authorName: book.author_name,
+  })
 
-    const topRatedBooksApi = 'https://apis.ccbp.in/book-hub/top-rated-books'
+  getBooks = async () => {
+    this.setState({apiStatus: apiStatusConstants.inProgress})
+
     const jwtToken = Cookies.get('jwt_token')
     const options = {
       method: 'GET',
@@ -60,107 +72,106 @@ class Home extends Component {
         Authorization: `Bearer ${jwtToken}`,
       },
     }
-    const response = await fetch(topRatedBooksApi, options)
-    if (response.ok === true) {
+    const getBooksUrl = 'https://apis.ccbp.in/book-hub/top-rated-books'
+
+    const response = await fetch(getBooksUrl, options)
+    if (response.ok) {
       const fetchedData = await response.json()
-      const booksList = fetchedData.books
-      const updatedData = booksList.map(eachBook => ({
-        id: eachBook.id,
-        authorName: eachBook.author_name,
-        coverPic: eachBook.cover_pic,
-        title: eachBook.title,
-      }))
+
+      const updatedList = fetchedData.books.map(eachBook =>
+        this.formattedData(eachBook),
+      )
       this.setState({
-        topRatedApiStatus: topRatedApiStatuses.success,
-        topRatedBooks: updatedData,
+        booksList: updatedList,
+        apiStatus: apiStatusConstants.success,
       })
     } else {
-      this.setState({topRatedApiStatus: topRatedApiStatuses.failure})
+      this.setState({apiStatus: apiStatusConstants.failure})
     }
   }
 
-  onClickRetry = () => {
-    this.getTopRatedBooks()
+  onClickTryAgain = () => {
+    this.getBooks()
   }
 
-  onClickFindBooks = () => {
-    const {history} = this.props
-    history.push('/shelf')
-  }
+  renderSlider = () => (
+    <BookHubThemeContext.Consumer>
+      {value => {
+        const {isDarkTheme} = value
+        const bgColor = isDarkTheme ? 'dark-slider' : 'slider-theme-light'
+        const textColor = !isDarkTheme ? 'light-theme-text' : 'dark-theme-text'
+        const {booksList} = this.state
+        return (
+          <ul className={`slick-container ${bgColor}`}>
+            <Slider {...settings}>
+              {booksList.map(eachBook => {
+                const {coverPic, authorName, id, title} = eachBook
+                return (
+                  <Link to={`/books/${id}`} className="text-links">
+                    <li key={id} className="slick-item">
+                      <img
+                        src={coverPic}
+                        className="slick-item-cover-pic"
+                        alt="title"
+                      />
+                      <h1 className={`title ${textColor}`}>{title}</h1>
+                      <p className={`author-name ${textColor}`}>{authorName}</p>
+                    </li>
+                  </Link>
+                )
+              })}
+            </Slider>
+          </ul>
+        )
+      }}
+    </BookHubThemeContext.Consumer>
+  )
 
-  renderSliderSuccessView = () => {
-    const {topRatedBooks} = this.state
+  renderLoader = () => (
+    <div className="loader" testid="loader">
+      <Loader type="TailSpin" color="#0284C7" height={50} width={50} />
+    </div>
+  )
 
-    return (
-      <Slider {...settings}>
-        {topRatedBooks.map(eachBook => {
-          const {id, title, coverPic, authorName} = eachBook
-          const onClickedTopRatedBook = () => {
-            const {history} = this.props
-            history.push(`/books/${id}`)
-          }
-
-          return (
-            <div className="top-rated-book-item-container" key={id}>
+  renderFailureView = () => (
+    <BookHubThemeContext.Consumer>
+      {value => {
+        const {isDarkTheme} = value
+        const textColor = !isDarkTheme ? 'light-theme-text' : 'dark-theme-text'
+        return (
+          <div className="home-failure-view-container">
+            <img
+              src="https://res.cloudinary.com/dovk61e0h/image/upload/v1663608572/Bookhub/Group_7522Failure_Image_ykvhlm_gwy5rw.png"
+              className="home-failure-image"
+              alt="failure view"
+            />
+            <p className={`${textColor} home-failure-heading`}>
+              Something went wrong, Please try again.
+            </p>
+            <div>
               <button
-                onClick={onClickedTopRatedBook}
-                className="top-rated-card-btn"
                 type="button"
+                onClick={this.onClickTryAgain}
+                className="home-try-again-button"
               >
-                <div className="top-rated-book-image-container">
-                  <img
-                    className="top-rated-book-image"
-                    src={coverPic}
-                    alt={title}
-                  />
-                </div>
-                <h1 className="top-rated-book-name">{title}</h1>
-                <p className="top-rated-book-author">{authorName}</p>
+                Try Again
               </button>
             </div>
-          )
-        })}
-      </Slider>
-    )
-  }
-
-  renderSliderProgressView = () => (
-    <div className="loader-container" testid="loader">
-      <Loader type="TailSpin" color="#8284C7" height={50} width={50} />
-    </div>
+          </div>
+        )
+      }}
+    </BookHubThemeContext.Consumer>
   )
 
-  renderSliderViewFailure = () => (
-    <div className="top-rated-books-failure-container">
-      <img
-        className="top-rated-books-failure-image"
-        src="https://res.cloudinary.com/dkxxgpzd8/image/upload/v1647250727/Screenshot_30_uavmge.png"
-        alt="failure view"
-      />
-
-      <p className="top-rated-books-failure-heading">
-        Something Went wrong. Please try again.
-      </p>
-      <button
-        className="top-rated-books-failure-btn"
-        onClick={this.onClickRetry}
-        type="button"
-      >
-        Try Again
-      </button>
-    </div>
-  )
-
-  renderSlider = () => {
-    const {topRatedApiStatus} = this.state
-
-    switch (topRatedApiStatus) {
-      case topRatedApiStatuses.success:
-        return <>{this.renderSliderSuccessView()}</>
-      case topRatedApiStatuses.inProgress:
-        return <>{this.renderSliderProgressView()}</>
-      case topRatedApiStatuses.failure:
-        return <> {this.renderSliderViewFailure()}</>
+  renderBooksListBasedOnApiStatus = () => {
+    const {apiStatus} = this.state
+    switch (apiStatus) {
+      case apiStatusConstants.success:
+        return this.renderSlider()
+      case apiStatusConstants.failure:
+        return this.renderFailureView()
+      case apiStatusConstants.inProgress:
+        return this.renderLoader()
       default:
         return null
     }
@@ -168,44 +179,51 @@ class Home extends Component {
 
   render() {
     return (
-      <>
-        <Header home />
-        <div className="home-page-bg-container">
-          <h1 className="home-heading" key="title">
-            Find Your Next Favorite Books?
-          </h1>
-          <p className="home-paragraph">
-            You are in the right place. Tell us what titles or genres you have
-            enjoyed in the past, and we will give you surprisingly insightful
-            recommendations.
-          </p>
-          <button
-            className="home-find-books-btn books-responsive-btn-sm"
-            type="button"
-            onClick={this.onClickFindBooks}
-          >
-            Find Books
-          </button>
-          <div>
-            <div className="home-top-rated-container">
-              <div className="top-rated-heading-container">
-                <h1 className="top-rated-heading">Top Rated Books</h1>
-                <button
-                  className="home-find-books-btn books-responsive-btn-lg"
-                  type="button"
-                  onClick={this.onClickFindBooks}
-                >
-                  Find Books
-                </button>
+      <BookHubThemeContext.Consumer>
+        {value => {
+          const {isDarkTheme} = value
+          const bgColor = isDarkTheme ? 'dark-theme' : 'light-theme'
+          const bgColor1 = isDarkTheme ? 'dark-slider' : 'slider-theme-light'
+          const textColor = !isDarkTheme
+            ? 'light-theme-text'
+            : 'dark-theme-text'
+
+          return (
+            <div>
+              <Header />
+              <div className={`home-container ${bgColor}`}>
+                <div className={`responsive-home ${bgColor}`}>
+                  <h1 className={`heading ${textColor}`}>
+                    Find Your Next Favorite Books
+                  </h1>
+                  <p className={`description ${textColor}`}>
+                    You are in the right place. Tell us what titles or genres
+                    you have enjoyed in the past, and we will give you
+                    surprisingly insightful recommendations.
+                  </p>
+                  <div className={`slider-container ${bgColor1}`}>
+                    <div className="top-rated-books-find-books">
+                      <h1 className={`top-rated-books-heading ${textColor}`}>
+                        Top Rated Books
+                      </h1>
+                      <div>
+                        <Link to="/shelf">
+                          <button type="button" className="find-books-button">
+                            Find Books
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                    {this.renderBooksListBasedOnApiStatus()}
+                  </div>
+                  <Footer />
+                </div>
               </div>
-              <div className="slick-container">{this.renderSlider()}</div>
             </div>
-          </div>
-        </div>
-        <Footer />
-      </>
+          )
+        }}
+      </BookHubThemeContext.Consumer>
     )
   }
 }
-
 export default Home

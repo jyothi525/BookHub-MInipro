@@ -1,120 +1,121 @@
 import {Component} from 'react'
-
 import {Redirect} from 'react-router-dom'
-
 import Cookies from 'js-cookie'
-
 import './index.css'
 
 class Login extends Component {
-  state = {username: '', password: '', showSubmitError: false, errorMsg: ''}
+  state = {username: '', password: '', showErrorMsg: false, errorMsg: ''}
 
-  onSubmitSuccuss = jwtToken => {
-    const {history} = this.props
-    Cookies.set('jwt_token', jwtToken, {expires: 30, path: '/'})
-    history.replace('/')
-  }
-
-  onSubmitFailure = errorMsg => {
-    this.setState({showSubmitError: true, errorMsg})
-  }
-
-  onSubmitForm = async event => {
-    event.preventDefault()
-    const {username, password} = this.state
-    const userDetails = {username, password}
-    const apiUrl = 'https://apis.ccbp.in/login'
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(userDetails),
-    }
-    const response = await fetch(apiUrl, options)
-    const data = await response.json()
-    if (response.ok === true) {
-      this.onSubmitSuccuss(data.jwt_token)
-    } else {
-      this.onSubmitFailure(data.error_msg)
-    }
+  onChangeUsername = event => {
+    this.setState({username: event.target.value})
   }
 
   onChangePassword = event => {
     this.setState({password: event.target.value})
   }
 
-  onChangeUsername = event => {
-    this.setState({username: event.target.value})
+  loginSuccess = jwtToken => {
+    Cookies.set('jwt_token', jwtToken, {expires: 30})
+    const {history} = this.props
+    history.replace('/')
   }
 
-  renderPasswordField = () => {
-    const {password} = this.state
-    return (
-      <>
-        <label className="input-label" htmlFor="password">
-          Password*
-        </label>
-        <input
-          type="password"
-          id="password"
-          className="input-field"
-          placeholder="Password"
-          value={password}
-          onChange={this.onChangePassword}
-        />
-      </>
-    )
+  loginFailure = errorMsg => {
+    this.setState({showErrorMsg: true, errorMsg})
   }
 
-  renderUsernameField = () => {
+  onSubmitForm = async event => {
+    event.preventDefault()
+    const {username, password} = this.state
+    const userDetails = {username, password}
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(userDetails),
+    }
+    const loginUrl = 'https://apis.ccbp.in/login'
+    const response = await fetch(loginUrl, options)
+    const data = await response.json()
+    if (response.ok) {
+      this.loginSuccess(data.jwt_token)
+    } else {
+      this.loginFailure(data.error_msg)
+    }
+  }
+
+  renderUsernameContainer = () => {
     const {username} = this.state
     return (
-      <>
-        <label className="input-label" htmlFor="username">
+      <div className="inputs-container">
+        <label htmlFor="username" className="label">
           Username*
         </label>
+        <br />
         <input
           type="text"
           id="username"
-          className="input-field"
-          placeholder="Username"
           value={username}
+          className="input-element"
+          placeholder="Ex-jyothi"
           onChange={this.onChangeUsername}
         />
-      </>
+      </div>
+    )
+  }
+
+  renderPasswordContainer = () => {
+    const {password} = this.state
+    return (
+      <div className="inputs-container">
+        <label htmlFor="password" className="label">
+          Password*
+        </label>
+        <br />
+        <input
+          type="password"
+          id="password"
+          value={password}
+          className="input-element"
+          placeholder="Ex-jyothi@2021"
+          onChange={this.onChangePassword}
+        />
+      </div>
     )
   }
 
   render() {
-    const {showSubmitError, errorMsg} = this.state
+    const {showErrorMsg, errorMsg} = this.state
+
     const jwtToken = Cookies.get('jwt_token')
     if (jwtToken !== undefined) {
       return <Redirect to="/" />
     }
     return (
-      <div className="login-form-container">
-        <img
-          src="https://res.cloudinary.com/dwtsapuyn/image/upload/v1645073768/bookhub-image_ubswwx.png"
-          alt="login website logo"
-          className="login-website-logo-mobile-image"
-        />
-        <img
-          src="https://res.cloudinary.com/dwtsapuyn/image/upload/v1645073768/bookhub-image_ubswwx.png"
-          alt="website login"
-          className="login-image"
-        />
-        <div className="form-main-container">
-          <form className="form-container" onSubmit={this.onSubmitForm}>
+      <div className="login-responsive-container">
+        <div className="login-page-left-side-section">
+          <img
+            src="https://res.cloudinary.com/dovk61e0h/image/upload/v1662988550/Bookhub/Rectangle_1467_wzhge6_ykftzx.png"
+            className="login-page-image"
+            alt="website login"
+          />
+        </div>
+        <div className="login-page-right-side-section">
+          <div className="login-card">
             <img
-              src="https://res.cloudinary.com/dwtsapuyn/image/upload/v1645077666/book-hub-logo_dy4szt.png"
-              alt="website logo"
-              className="login-website-logo-desktop-image"
+              src="https://res.cloudinary.com/dovk61e0h/image/upload/v1662988538/Bookhub/bookhub_logo_hjkrwl.png"
+              className="login-website-logo"
+              alt="login website logo"
             />
-            <div className="input-container">{this.renderUsernameField()}</div>
-            <div className="input-container">{this.renderPasswordField()}</div>
-            <button type="submit" className="login-button">
-              Login
-            </button>
-            {showSubmitError && <p className="error-message">{errorMsg}</p>}
-          </form>
+            <form onSubmit={this.onSubmitForm} className="form-container">
+              {this.renderUsernameContainer()}
+              {this.renderPasswordContainer()}
+              {showErrorMsg ? (
+                <p className="error-message">{errorMsg}</p>
+              ) : null}
+              <button type="submit" className="submit-button">
+                Login
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     )

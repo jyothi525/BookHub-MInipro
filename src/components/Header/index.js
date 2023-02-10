@@ -1,139 +1,136 @@
 import {Component} from 'react'
 import {Link, withRouter} from 'react-router-dom'
+import {MdMenu} from 'react-icons/md'
+import {AiOutlineClose} from 'react-icons/ai'
+import {FiSun} from 'react-icons/fi'
 import Cookies from 'js-cookie'
-
-import {FiMenu} from 'react-icons/fi'
-import {RiCloseCircleFill} from 'react-icons/ri'
+import BookHubThemeContext from '../../context/BookHubThemeContext'
 import './index.css'
 
 class Header extends Component {
-  state = {displayNavbar: false}
+  state = {isToggle: false}
 
-  onClickMenu = () => {
+  onClickCloseIcon = () => {
     this.setState(prevState => ({
-      displayNavbar: !prevState.displayNavbar,
+      isToggle: !prevState.isToggle,
     }))
   }
 
-  onClickCross = () => {
-    this.setState({displayNavbar: false})
+  onClickMenuIcon = () => {
+    this.setState(prevState => ({
+      isToggle: !prevState.isToggle,
+    }))
   }
 
   onClickLogout = () => {
+    Cookies.remove('jwt_token')
     const {history} = this.props
     history.replace('/login')
-    Cookies.remove('jwt_token')
-  }
-
-  onClickWebSiteLogo = () => {
-    const {history} = this.props
-    history.push('/')
   }
 
   render() {
-    const {home, shelves, favorite} = this.props
-    const activeHome = home ? 'active-tab' : ''
-    const activeShelves = shelves ? 'active-tab' : ''
-    const activeFavorite = favorite ? 'active-tab' : ''
-    const {displayNavbar} = this.state
-
+    const {isToggle} = this.state
     return (
-      <div>
-        <div className="header-container">
-          <div className="header-website-logo1">
-            <Link to="/">
-              <>
-                <img
-                  className="header-website-logo"
-                  src="https://res.cloudinary.com/dkxxgpzd8/image/upload/v1647190320/Group_7731_v0p1nt_gjeokw.png"
-                  alt="website logo"
-                />
-              </>
-            </Link>
-          </div>
-          <ul className="tabs-container">
-            <Link className="link" to="/">
-              <li className={`list-item bookshelves-tab ${activeHome}`}>
-                Home
-              </li>
-            </Link>
-            <Link className="link" to="/shelf">
-              <li className={`list-item bookshelves-tab ${activeShelves}`}>
-                Bookshelves
-              </li>
-            </Link>
-            <Link className="link" to="/favorites">
-              <li className={`list-item bookshelves-tab ${activeFavorite}`}>
-                MyFavorites
-              </li>
-            </Link>
-            <li className="list-item">
-              <button
-                onClick={this.onClickLogout}
-                className="logout-btn"
-                type="button"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div className="header-navbar-responsive-container">
-          <div className="header-nav-container">
-            <Link to="/">
-              <img
-                className="header-nav-bar-website-logo"
-                src="https://res.cloudinary.com/dkxxgpzd8/image/upload/v1647190320/Group_7731_v0p1nt_gjeokw.png"
-                alt="website logo"
-              />
-            </Link>
-            <button
-              onClick={this.onClickMenu}
-              className="cross-icon-btn"
-              type="button"
-            >
-              <FiMenu className="menu-icon" />
-            </button>
-          </div>
-          {displayNavbar && (
-            <>
-              <div className="header-navbar-tabs-container">
-                <Link className="link" to="/">
-                  <h1 className={`home-tab ${activeHome}`}>Home</h1>
+      <BookHubThemeContext.Consumer>
+        {value => {
+          const {isDarkTheme, onClickThemeIcon} = value
+
+          const bgColor = isDarkTheme
+            ? 'header-dark-theme'
+            : 'header-light-theme'
+          const textColor = !isDarkTheme
+            ? 'light-theme-text'
+            : 'dark-theme-text'
+
+          const onClickThemeButton = () => {
+            onClickThemeIcon()
+          }
+
+          return (
+            <nav className={`navbar ${bgColor}`}>
+              <div className={`header-responsive-navbar ${bgColor}`}>
+                <Link to="/">
+                  <img
+                    src="https://res.cloudinary.com/dovk61e0h/image/upload/v1663608571/Bookhub/Group_7731Website_Logo_o1zltx_zndaus.png"
+                    className="website-logo"
+                    alt="website logo"
+                  />
                 </Link>
-                <Link className="link" to="/shelf">
-                  <h1 className={`bookshelves-tab ${activeShelves}`}>
-                    BookShelves
-                  </h1>
-                </Link>
-                <Link className="link" to="/favorites">
-                  <h1 className={`bookshelves-tab ${activeFavorite}`}>
-                    MyFavorites
-                  </h1>
-                </Link>
-              </div>
-              <div className="header-navbar-tabs-container">
+
+                <ul className="nav-items-container">
+                  <Link to="/" className="nav-links">
+                    <li className={`nav-text ${textColor}`}>Home</li>
+                  </Link>
+                  <Link to="/shelf" className="nav-links">
+                    <li className={`nav-text ${textColor}`}>Bookshelves</li>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={onClickThemeButton}
+                    className="theme-button"
+                  >
+                    <FiSun className={textColor} size={25} />
+                  </button>
+                  <Link to="/login" className="nav-links">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={this.onClickLogout}
+                        className="logout-button"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </Link>
+                </ul>
                 <button
-                  onClick={this.onClickLogout}
-                  className="logout-btn"
                   type="button"
+                  className="menu-icon"
+                  onClick={this.onClickMenuIcon}
                 >
-                  Logout
-                </button>
-                <button
-                  onClick={this.onClickCross}
-                  className="cross-icon-btn"
-                  type="button"
-                >
-                  <RiCloseCircleFill className="cross-icon" />
+                  <MdMenu className={textColor} size={20} />
                 </button>
               </div>
-            </>
-          )}
-        </div>
-      </div>
+              {isToggle && (
+                <ul className="mobile-nav-items-container">
+                  <Link to="/" className="nav-links">
+                    <li className={`nav-text ${textColor}`}>Home</li>
+                  </Link>
+                  <Link to="/shelf" className="nav-links">
+                    <li className={`nav-text ${textColor}`}>Bookshelves</li>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={onClickThemeButton}
+                    className="theme-button"
+                  >
+                    <FiSun className={textColor} size={25} />
+                  </button>
+                  <Link to="/login" className="nav-links">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={this.onClickLogout}
+                        className="logout-button"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </Link>
+                  <button
+                    type="button"
+                    className="close-icon"
+                    onClick={this.onClickCloseIcon}
+                  >
+                    <AiOutlineClose className={textColor} size={20} />
+                  </button>
+                </ul>
+              )}
+            </nav>
+          )
+        }}
+      </BookHubThemeContext.Consumer>
     )
   }
 }
-
 export default withRouter(Header)

@@ -1,133 +1,123 @@
-.login-form-container {
+.login-responsive-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+@media screen and (max-width: 768px) {
+  .login-responsive-container {
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+.login-page-left-side-section {
+  width: 50%;
+}
+@media screen and (max-width: 768px) {
+  .login-page-left-side-section {
+    height: 30%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #faffff;
+  }
+}
+.login-page-image {
+  max-height: 100vh;
+  width: 100%;
+}
+@media screen and (max-width: 768px) {
+  .login-page-image {
+    height: 50%;
+    width: 50%;
+    border-radius: 50%;
+    margin: 20px;
+  }
+}
+.login-page-right-side-section {
+  height: 100%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 100vw;
-  margin: auto;
+  background-color: #faffff;
 }
-
-@media screen and (min-width: 992px) {
-  .login-form-container {
-    flex-direction: row;
+@media screen and (max-width: 768px) {
+  .login-page-right-side-section {
+    width: 100%;
+    height: 50%;
     justify-content: flex-start;
   }
 }
-
-.login-website-logo-mobile-image {
-  width: 165px;
-  margin-top: 50px;
-  margin-bottom: 35px;
-  border-radius: 50%;
-}
-@media screen and (min-width: 992px) {
-  .login-website-logo-mobile-image {
-    display: none;
-    border-radius: none;
-  }
-}
-
-.login-image {
-  width: 200px;
-  margin-left: 50px;
-}
-@media screen and (min-width: 992px) {
-  .login-image {
-    width: 50vw;
-    height: 90vh;
-  }
-}
-
-.form-main-container {
+.login-card {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  width: 50vw;
+  height: 50%;
+  width: 80%;
+  background-color: #ffffff;
+  border-radius: 3px;
+  padding: 16px;
+  box-shadow: 0px 2px 4px 0px #a5b5d1;
 }
-@media screen and (max-width: 991px) {
-  .form-main-container {
-    width: 100vw;
+@media screen and (max-width: 768px) {
+  .login-card {
+    height: 80%;
+    width: 85%;
+    justify-content: flex-start;
+    border-radius: 5px;
+    margin-left: 20px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    margin-right: 30px;
   }
 }
-
-.login-website-logo-desktop-image {
-  width: 185px;
+.login-website-logo {
+  height: 40px;
+  width: 100px;
 }
-@media screen and (max-width: 991px) {
-  .login-image {
-    display: none;
-  }
-}
-
 .form-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  border-radius: 8px;
-  width: 100%;
+  height: 60%;
+  width: 90%;
+  margin-top: 20px;
 }
-
-@media screen and (min-width: 992px) {
+@media screen and (max-width: 768px) {
   .form-container {
-    width: 350px;
-    flex-shrink: 0;
-    box-shadow: 0px 8px 40px rgba(7, 7, 7, 0.08);
-    padding: 64px 48px 64px 48px;
-    justify-self: center;
+    width: 90%;
+    margin-top: 20px;
   }
 }
-
-.input-container {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.input-label {
-  margin-bottom: 0px;
+.label {
   font-family: 'Roboto';
-  font-weight: bold;
-  line-height: 16px;
-  color: #475569;
+  font-size: 18px;
+  color: #373b40;
 }
-
-.input-field {
-  font-size: 14px;
-  height: 40px;
-  border: 1px solid #d7dfe9;
-  background-color: #e2e8f0;
-  color: #64748b;
-  border-radius: 2px;
-  margin-top: 5px;
-  padding: 8px 16px 8px 16px;
-  outline: none;
-}
-
-.login-button {
-  font-family: 'Roboto';
-  font-weight: bold;
-  font-size: 14px;
+.input-element {
   height: 40px;
   width: 100%;
-  margin-top: 20px;
-  margin-bottom: 2px;
-  background-color: #0b69ff;
-  border-radius: 8px;
-  color: #ffffff;
-  border: none;
+  padding-left: 10px;
+  background-color: transparent;
   outline: none;
   cursor: pointer;
+  border: 1px solid #737475;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }
-
-.error-message {
-  align-self: flex-start;
-  font-size: 12px;
+.submit-button {
+  height: 40px;
+  width: 100%;
+  background-color: #508bf2;
+  border-radius: 5px;
+  color: #ffffff;
   font-family: 'Roboto';
-  margin-top: 3px;
-  margin-bottom: 0px;
-  color: #ff0b37;
-  line-height: 16px;
+  font-size: 18px;
+  border: none;
+}
+.error-message {
+  font-family: 'Roboto';
+  font-size: 16px;
+  color: red;
 }
